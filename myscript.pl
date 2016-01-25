@@ -14,7 +14,7 @@ my $summ = 0;
 my $size_hash = 1;
 my $max_size = 0;
 
-	#$cv->begin;
+	$cv->begin;
 	http_get $url, sub {
 	my ($body, $hr) = @_;
 	my $size_page = length $body;
@@ -39,7 +39,7 @@ my $max_size = 0;
 	}
 	async(%htmlhash);
 	say "# referenses $size_hash"; 
-	#$cv->end;
+	$cv->end;
 	return;	
 	};
 
@@ -79,30 +79,36 @@ sub async {
 				say "##### referenses $size_hash"; 
 				if ($size_hash1 < 10000) {
 					$size_hash = $size_hash1;
-					async(%htmlhash1);
+					if (%htmlhash1) {
+						async(%htmlhash1);
+					}
+					else {
+						say "Not exist references";
+						$cv->send;
+					}
 				}
 				else {
 					say "STOP";
-					$cv->end;
-					return;
+					$cv->send;
 				}				
 			}
 			#print "Content of $i: $size_page_this\n";
             		$count++;
-			#say $count;
 			# если количество успешных запросов равно размеру списка URLов, отправляем данные, на уровень выше.
             		if ($count == scalar keys(%htmlhash)) {
-				          say "WOHOOOOOO";
-				          $cv->end;
-			          }
+				say "WOHOOOOOO";
+				$cv->send;
+			}
+			$cv->end;
 	 	};
-		$cv->end;
+		
 	};
+	$cv->end;
 }
 
 $cv->recv;
 say "Нашли такие уникальные ссылки: ";
-#my $c = 0;
+my $c = 0;
 for my $key (sort { $links{$a} <=> $links{$b} } keys %links) { };
 for my $value (values %links) {	
 	if ($c <= 10){
@@ -111,7 +117,7 @@ for my $value (values %links) {
 	else {
 		last;
 	}	
-  $c++;
+	$c++;
 }
 say "Maxsize $max_size";
 say "Всего найдено ссылок: $size_hash";
