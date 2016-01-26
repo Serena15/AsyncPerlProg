@@ -133,9 +133,6 @@ sub my_decode_json {
 				my $hash = $1;
 				my @n 	 = $hash =~ m/(\w+)\s*=>\s*(\w+),*/sg;
 				my %hash = @n;
-				my $temp = '111111111111';
-				#p $temp;
-				#p @n;
 				%strings = ( %strings, "key$count_keys" => \%hash );
 				$count_keys++;
 			}			
