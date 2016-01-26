@@ -64,9 +64,7 @@ sub my_decode_json {
 		print "data invalid\n";
 		return;
 	}
-	while ($data =~ s/\\u([a-f\d]{4})/chr(hex($1))/e) {
-		# body...
-	}
+	$data =~ s/\\u([a-f\d]{4})/chr(hex($1))/eg;
 	while ( $data =~ m/\G(.)/sgc ) {
 		$data =~ s{(?<!\\)"(\w+)(?<!\\)"\s*:}{$1 =>}; #'"keyNumber" : str/num/obj/arr' convert 'keyNumber => str/num/obj/arr'   
 	}
@@ -75,21 +73,24 @@ sub my_decode_json {
 	my %strings;
 	while ( $data =~ m/\G(.)/sgc ) {	
 		if ( $data =~ s{"((\\.|[^\\"])*?)"}{key$count_keys}s ) {
-			%strings = ( %strings, "key$count_keys" => $1 );
+		#	%strings = ( %strings, "key$count_keys" => $1 );
+			$strings{"key$count_keys"} = $1;
 			$count_keys++;			
 		}
 	}
 	pos($data) = 0;
 	while ( $data =~ m/\G(.)/sgc ) {	
 		if ( $data =~ s{(\-\s*\d+\.{0,1}\d*)}{key$count_keys}s ) {
-			%strings = ( %strings, "key$count_keys" => $1 );
+		#	%strings = ( %strings, "key$count_keys" => $1 );
+			$strings{"key$count_keys"} = $1;
 			$count_keys++;
 		}		
 	}
 	pos($data) = 0;
 	while ( $data =~ m/\G(.)/sgc ) {		
 		if ( $data =~ s{(\d+\.{1}\d*)}{key$count_keys}s ) {
-			%strings = ( %strings, "key$count_keys" => $1 );
+		#	%strings = ( %strings, "key$count_keys" => $1 );
+			$strings{"key$count_keys"} = $1;
 			$count_keys++;
 		}
 	}
@@ -101,7 +102,8 @@ sub my_decode_json {
 				for my $j (0..$#array_numbers){
 					$array_numbers[$j] += 0;
 				}
-				%strings = ( %strings, "key$count_keys" => \@array_numbers );
+				#%strings = ( %strings, "key$count_keys" => \@array_numbers );
+				$strings{"key$count_keys"} = \@array_numbers;
 				$count_keys++;
 			}		
 		}
@@ -111,9 +113,7 @@ sub my_decode_json {
 				my @array = split(/,/,$1);
 				for my $j (0..$#array){
 					my $key_for_hash = $array[$j];
-					while ($key_for_hash =~ s/\s+//) {
-						# body...
-					}
+					$key_for_hash =~ s/\s+//g;
 					if (ref($strings{$key_for_hash}) eq 'HASH' and exists($strings{$key_for_hash})) {
 						$array[$j] = $strings{$key_for_hash};
 						my %hash_array = %{$array[$j]};
@@ -123,7 +123,8 @@ sub my_decode_json {
 						}
 					}
 				}
-				%strings = ( %strings, "key$count_keys" => \@array );
+				#%strings = ( %strings, "key$count_keys" => \@array );
+				$strings{"key$count_keys"} = \@array;
 				$count_keys++;
 			}
    		}	
@@ -133,7 +134,8 @@ sub my_decode_json {
 				my $hash = $1;
 				my @n 	 = $hash =~ m/(\w+)\s*=>\s*(\w+),*/sg;
 				my %hash = @n;
-				%strings = ( %strings, "key$count_keys" => \%hash );
+				#%strings = ( %strings, "key$count_keys" => \%hash );
+				$strings{"key$count_keys"} = \%hash;
 				$count_keys++;
 			}			
 		}
