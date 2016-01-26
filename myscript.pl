@@ -109,10 +109,10 @@ sub async {
 $cv->recv;
 say "Нашли такие уникальные ссылки: ";
 my $c = 0;
-for my $key (sort { $links{$a} <=> $links{$b} } keys %links) { };
-for my $value (values %links) {	
+for my $key (sort { $links{$b} <=> $links{$a} } keys %links) { };
+for my $key (keys %links) {	
 	if ($c <= 10){
-		print" URL: $links{$value} size: $value \n";
+		print" URL: $key size: $links{$key} \n";
 	}
 	else {
 		last;
